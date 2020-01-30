@@ -283,7 +283,7 @@ body {
 }
 
 .space {
-  justify-content: space-evenly;;
+  justify-content: space-evenly;
 }
 
 .t-filter {
@@ -313,9 +313,15 @@ body {
     max-width: 33.333333%;
     display: flex;
   }
+  .t-filter {
+    justify-content: flex-start;
+  }
+  .space {
+    justify-content: start;
+  }
 }
 
-@media (min-width: 1700px) {
+@media (min-width: 1500px) {
   .col-filter {
     -ms-flex: 0 0 25%;
     flex: 0 0 25%;
