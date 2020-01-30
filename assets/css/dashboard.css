@@ -195,13 +195,12 @@ body {
   height: 45px;
 }
 
-.table-filter {
+.filter-option {
   color: #007bff;
-  font-size: 18px;
-  padding-right: 10px;
+  font-size: 20px;
 }
 
-.s-width {
+.search-width {
   width: 360px;
 }
 
@@ -218,10 +217,10 @@ body {
   align-items: center;
 }
 
-.row>.col-sm-2 span {
+.row>.col-2 select {
   margin-right: 10px;
   margin-left: 10px;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .t-talign {
@@ -259,12 +258,17 @@ body {
   display: none;
 }
 
-.col-filter>span {
-  font-size: 20px;
+.hide>.col-10 {
+  display: flex;
+  align-items: center;
 }
 
-.col-filter>.table-filter {
+.row>.col-10>.search-width, .filter-option, .btn {
   margin-right: 20px;
+}
+
+.col-filter>span {
+  font-size: 20px;
 }
 
 .col-filter>select {
@@ -272,14 +276,25 @@ body {
   width: 100px;
 }
 
+.col-filter {
+  display: flex;
+  padding: 15px;
+  align-items: center;
+}
+
+.space {
+  justify-content: space-evenly;;
+}
+
+.t-filter {
+  justify-content: flex-end;
+}
+
 @media (min-width: 992px) {
   .col-filter {
     -ms-flex: 0 0 50%;
     flex: 0 0 50%;
     max-width: 50%;
-    display: flex;
-    padding: 15px;
-    align-items: center;
   }
 }
 
@@ -288,22 +303,29 @@ body {
     -ms-flex: 0 0 100%;
     flex: 0 0 100%;
     max-width: 100%;
-    display: flex;
-    padding: 15px;
   }
 }
 
 @media (min-width: 1200px) {
+  .col-filter {
+    -ms-flex: 0 0 33.333333%;
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+    display: flex;
+  }
+}
+
+@media (min-width: 1700px) {
   .col-filter {
     -ms-flex: 0 0 25%;
     flex: 0 0 25%;
     max-width: 25%;
     display: flex;
   }
-  .col-filter {
-    display: none;
-  }
   .hide {
     display: flex;
+  }
+  .col-filter {
+    display: none;
   }
 }

@@ -10,6 +10,8 @@
     <link href="./assets/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <!--fontawesome-->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet">
+    <link href="./assets/css/_nav.scss" rel="stylesheet">
+    <link href="./assets/css/_navbar.scss" rel="stylesheet">
     <!-- Favicons -->
     <link rel="icon" href="./assets/img/favicons/zee.png" type="image/png" sizes="25x25">
 
@@ -46,7 +48,7 @@
           <span data-feather="message-circle"></span>
         </a>
       </li>
-      <li class="nav-item text-nowrap li-space">
+      <li class="nav-item dropdown text-nowrap li-space">
         <a class="nav-link" href="#">
           <span data-feather="bell"></span>
         </a>
@@ -128,7 +130,7 @@
       <div class="row">
         <div class="col-filter">
           <!-- Search box -->
-          <div class="s-width input-group">
+          <div class="search-width input-group">
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">
                 <span data-feather="search"></span>
@@ -137,21 +139,22 @@
             <input type="text" class="form-control" placeholder="Search name or code">
           </div>
         </div>
-        <div class="col-filter">
+        <div class="col-filter space">
           <!-- Fliter -->
-          <span class="table-filter">Fliter</span>
+          <span class="filter-option">Fliter</span>
           <!-- Delete Button -->
           <button type="button" class="btn btn-outline-danger">
             <span data-feather="trash-2"></span>
           </button>
-        </div>
-        <div class="col-filter">
           <!-- Make Visible-->
           <button type="button" class="btn btn-outline-primary">Make visible</button>
+        </div>
+        <div class="col-filter">
+          
           <!-- Make not Visible-->
           <button type="button" class="btn btn-outline-danger">Make not visible</button>
         </div>
-        <div class="col-filter">
+        <div class="col-filter t-filter">
           <span>show</span>
           <select name="example_length" aria-controls="example" class="custom-select custom-select-sm form-control form-control-sm"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select>
           <span>entries</span>
@@ -159,9 +162,9 @@
       </div>
 
       <div class="row hide">
-        <div class="col-sm-3">
+        <div class="col-10">
           <!-- Search box -->
-          <div class="s-width input-group">
+          <div class="search-width input-group">
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">
                 <span data-feather="search"></span>
@@ -169,10 +172,8 @@
             </div>
             <input type="text" class="form-control" placeholder="Search name or code">
           </div>
-        </div>
-        <div class="col-sm-7">
           <!-- Fliter -->
-          <span class="table-filter">Fliter</span>
+          <span class="filter-option">Fliter</span>
           <!-- Delete Button -->
           <button type="button" class="btn btn-outline-danger">
             <span data-feather="trash-2"></span>
@@ -182,7 +183,7 @@
           <!-- Make not Visible-->
           <button type="button" class="btn btn-outline-danger">Make not visible</button>
         </div>
-        <div class="col-sm-2 filter-dropdown">
+        <div class="col-2 filter-dropdown">
           <span>show</span>
           <select name="example_length" aria-controls="example" class="custom-select custom-select-sm form-control form-control-sm"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select>
           <span>entries</span>
