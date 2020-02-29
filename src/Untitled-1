@@ -1,0 +1,409 @@
+/* eslint-disable prettier/prettier */
+/* PurchaseOrder header */
+import React, { Component } from 'react';
+import { Item, Label, Button, Text, Picker, Card, CardItem, Body } from 'native-base';
+import {
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  View,
+  StatusBar,
+  TextInput,
+  Image,
+  ImageBackground,
+  Dimensions,
+  KeyboardAvoidingView,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+  ToastAndroid
+} from 'react-native';
+
+import Icon from 'react-native-vector-icons/Ionicons'
+import { FlatGrid } from 'react-native-super-grid';
+import { openDatabase } from 'react-native-sqlite-storage';
+var db = openDatabase({ name: 'UserDatabase.db' });
+var searching = "";
+
+
+/* PurchaseOrder body */
+const { width: WIDTH } = Dimensions.get('window')
+const sizes = { sm: 100, md: 50, lg: 33.333, xl: 25 }
+import { Searchbar } from 'react-native-paper';
+export default class PurchaseOrder extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      dataSource: [],
+      dataSource1: {},
+      loading: true,
+      isFetching: false,
+      FlatListItems: [],
+      user_id: '',
+      apistatus: 'Waiting For Approval',
+      visibility: true,
+      filter: "",
+      searchvisible: false,
+      count: 0,
+    }
+  }
+
+  static navigationOptions = ({ navigation }) => {
+    const { params = {} } = navigation.state
+    return {
+      headerTintColor: "#fff",
+      headerStyle: {
+        backgroundColor: '#2196F3',
+      },
+      headerTitle: params.searchvisible ? <TextInput
+        placeholder="Search"
+        underlineColorAndroid='transparent'
+        placeholderTextColor='#fff'
+        style={{ color: '#fff' }}
+        onChangeText={value => this.onChangeSearch(value)}
+        value={params.filter}
+      /> : 'Purchase Order',
+      headerRight: () => (
+        <TouchableOpacity onPress={navigation.getParam('searchlist')}>
+          <Icon name="ios-search" color={'#fff'} size={25} style={{ paddingRight: 15 }} />
+        </TouchableOpacity>
+
+      ),
+    }
+  }
+
+  static handlecallback = (searchtext) => {
+    searching = searchtext;
+  }
+
+  _searchlist = () => {
+    const { searchvisible } = this.state
+    const { filter } = this.state
+    this.props.navigation.setParams({
+      searchvisible, filter
+    })
+    this.setState({ searchvisible: true })
+  };
+
+  componentDidMount() {
+    this.props.navigation.setParams({ searchlist: this._searchlist, filter: this.state.filter });
+    this.searchRandomUser()
+  }
+
+  onChangeSearch(value) {
+    this.setState({
+      filter: value,
+    });
+    this.props.navigation.setParams({
+      filter: value,
+    });
+  }
+
+  onRefresh() {
+    this.setState({ isFetching: true }, function () { this.searchRandomUser() });
+  }
+
+  onValueChange1(itemValue, itemIndex) {
+    if (itemValue == 'Waiting For Approval') {
+      this.setState({ apistatus: itemValue, visibility: true });
+    } else {
+      this.setState({ apistatus: itemValue, visibility: false });
+    }
+    this.searchRandomUser()
+  }
+
+  searchRandomUser = async () => {
+    const { FlatListItems } = this.state;
+    const { user_id } = this.state;
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM table_user', [], (tx, results) => {
+        var temp = [];
+        for (let i = 0; i < results.rows.length; ++i) {
+          temp.push(results.rows.item(i));
+        }
+        this.setState({
+          FlatListItems: temp,
+        });
+        var params = JSON.stringify({
+          id: this.state.FlatListItems[0].user_id,
+          type: "PO",
+          status: this.state.apistatus
+        });
+        fetch("http://106.51.49.166:8090/MMS/rest/api/latest/android/purchaseregister", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: params,
+        })
+          .then(response => response.json())
+          .then(responseText => {
+            this.setState({
+              dataSource: responseText.data,
+              loading: false,
+              isFetching: false
+            });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+
+      });
+
+    });
+
+  }
+
+  ListEmptyView = () => {
+    return (
+      <View style={styles.MainContainer}>
+        <Text style={{ textAlign: 'center', fontSize: 20 }}> Data Not Available</Text>
+      </View>
+
+    );
+  }
+  render() {
+    const { loading } = this.state;
+    const items = this.state.dataSource;
+    const screenWidth = Math.round(Dimensions.get('window').width);
+    const { FlatListItems } = this.state;
+    const { filter } = this.state;
+    const lowercasedFilter = filter.toLowerCase();
+    const filteredData = items.filter(item => {
+      return Object.keys(item).some(key =>
+        item[key].toString().toLowerCase().includes(lowercasedFilter)
+      );
+    });
+    //alert(screenWidth)
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity onPress={() => this.setState({ searchvisible: true })}>
+          <Icon name="ios-search" color={'#000'} size={25} style={{ paddingRight: 15 }} />
+        </TouchableOpacity>
+        {this.state.searchvisible ?
+          <TextInput onChangeText={(filter) => this.setState({ filter })}
+            value={this.state.filter}
+          />
+          : null}
+        <Searchbar
+          placeholder="Search"
+          onChangeText={(filter) => this.setState({ filter })}
+          value={this.state.filter}
+          style = {{marginLeft: 10, marginRight: 10}}
+        />
+        <Item stackedLabel>
+          <Label>Status</Label>
+          <Item picker>
+            <Picker
+              mode="dropdown"
+              iosIcon={<Icon name="arrow-down" />}
+              style={styles.DropDown}
+              placeholderStyle={{ color: "#bfc6ea" }}
+              placeholderIconColor="#007aff"
+              selectedValue={this.state.apistatus}
+              onValueChange={this.onValueChange1.bind(this)}
+            >
+              <Picker.Item label="To Approve" value="Waiting For Approval" />
+              <Picker.Item label="Approved" value="Approved" />
+              <Picker.Item label="Rejected" value="Rejected" />
+            </Picker>
+          </Item>
+        </Item>
+        <FlatGrid
+          onRefresh={() => this.onRefresh()}
+          refreshing={this.state.isFetching}
+          itemDimension={270}
+          items={filteredData}
+          style={styles.container}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item, index }) => (
+            <TouchableOpacity activeOpacity={.7} onPress={() => this.props.navigation.navigate('PurchaseOrderEdit', {
+              transno: item.transno, date: item.date, prepare: item.prepare, party: item.custname,
+              value: item.amount, age: item.age, PurchaseOrder: this, user_id: FlatListItems[0].user_id, address: item.address, category: item.category
+            })}>
+              <Card>
+                <CardItem header style={styles.CardHeader}>
+                  <Text style={styles.Title}>S.No : <Text style={styles.SupplierData}>{index + 1}</Text> </Text>
+                  <Text style={styles.Title}>Date : <Text style={styles.SupplierData}>{item.date}</Text></Text>
+                </CardItem>
+                <CardItem>
+                  <Body>
+                    <View style={styles.Transaction}>
+                      <Text style={styles.Title}>Transaction : </Text>
+                      <Text style={styles.TransactionData}>{item.transno}</Text>
+                    </View>
+                    <View style={styles.Supplier}>
+                      <Text style={styles.Title}>Supplier : </Text>
+                      <Text style={styles.SupplierData}>{item.custname}</Text>
+                    </View>
+                  </Body>
+                </CardItem>
+                <CardItem footer>
+                  {this.state.visibility ?
+                    <View style={{ flexDirection: "row" }}>
+                      <Button rounded small success style={styles.But} onPress={() => { this.approveClickListener(item.transno, "approve") }}>
+                        <Text style={styles.ButText}>Approve</Text>
+                      </Button>
+                      <Button rounded small danger style={styles.But} onPress={() => { this.approveClickListener(item.transno, "reject") }}>
+                        <Text style={styles.ButText}>Reject</Text>
+                      </Button>
+                    </View>
+                    : null}
+                  <Button rounded small primary>
+                    <Text style={styles.ButText} onPress={() => { this.props.navigation.navigate('ItemDetails', { id: item.transno, type: "PO" }) }}>Item Details</Text>
+                  </Button>
+                </CardItem>
+              </Card>
+            </TouchableOpacity>
+          )}
+        //ListEmptyComponent={this.ListEmptyView}
+        />
+        {
+          this.state.loading ? <ActivityIndicator
+            style={styles.loading}
+            size="large" /> : null
+        }
+      </View>
+    );
+  }
+
+  approveClickListener = (transaction_id, status_approve) => {
+    const { comments } = this.state;
+    const { FlatListItems } = this.state;
+    this.setState({
+      loading: true,
+    });
+    var params = JSON.stringify({
+      comments: this.state.comments,
+      id: transaction_id,
+      type: "PO",
+      user_id: FlatListItems[0].user_id,
+      status: status_approve
+    });
+    //alert(params);
+    fetch("http://106.51.49.166:8090/MMS/rest/api/latest/android/purchaseorder_approval", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: params,
+    })
+      .then(response => response.json())
+      .then(responseText => {
+        this.setState({
+          dataSource1: responseText,
+          loading: false
+        });
+        let a = this.state.dataSource1.success;
+        //alert(a)
+        if (a === '1') {
+          this.deleteItemById(transaction_id)
+          if (status_approve === "approve") {
+            ToastAndroid.showWithGravityAndOffset(
+              "Approved Successfully",
+              ToastAndroid.LONG,
+              ToastAndroid.BOTTOM,
+              25,
+              50
+            );
+          } else {
+            ToastAndroid.showWithGravityAndOffset(
+              "Rejected Successfully",
+              ToastAndroid.LONG,
+              ToastAndroid.BOTTOM,
+              25,
+              50
+            );
+          }
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  deleteItemById = id => {
+    const filteredData = this.state.dataSource.filter(item => item.transno !== id);
+    this.setState({ dataSource: filteredData });
+  }
+
+  searchText = (e) => {
+    let text = e.toLowerCase()
+    let trucks = this.state.dataSource
+    let filteredName = trucks.filter((item) => {
+      return item.custname.toLowerCase().match(text)
+    })
+    if (!text || text === '') {
+      this.setState({
+        dataSource: ''
+      })
+    } else if (!Array.isArray(filteredName) && !filteredName.length) {
+      // set no data flag to true so as to render flatlist conditionally
+      this.setState({
+        noData: true
+      })
+    } else if (Array.isArray(filteredName)) {
+      this.setState({
+        noData: false,
+        dataSource: filteredName
+      })
+    }
+  }
+
+
+}
+
+/* PurchaseOrder StyleSheet */
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#DCDCDC"
+  },
+  But: {
+    marginRight: 10
+  },
+  CardHeader: {
+    justifyContent: "space-between"
+  },
+  ButText: {
+    fontSize: 10,
+    textTransform: "capitalize"
+  },
+  Title: {
+    fontSize: 15,
+    fontWeight: "700",
+    fontFamily: 'sans-serif-thin',
+  },
+  SupplierData: {
+    fontSize: 15,
+    color: "#2196F3",
+    fontWeight: "700",
+    fontFamily: 'sans-serif-condensed',
+  },
+  Transaction: {
+    flexDirection: "row"
+  },
+  Supplier: {
+    flexDirection: "column"
+  },
+  TransactionData: {
+    fontSize: 15,
+    color: "#2196F3",
+    fontWeight: "700",
+    fontFamily: 'sans-serif-condensed',
+  },
+  MainContainer: {
+    padding: 10,
+    marginTop: Dimensions.get('window').height / 2,
+    height: 40,
+  },
+  loading: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+});
